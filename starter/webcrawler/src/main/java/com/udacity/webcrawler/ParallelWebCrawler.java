@@ -175,7 +175,7 @@ final class ParallelWebCrawler implements WebCrawler {
               .setVisitedUrls(visitedUrls)
               .setCounts(counts)
               .setVisitedUrlsBlock(visitedUrlsBlock)
-              .setLatch(new CountDownLatch(result.getLinks().size()))
+              .setLatch(new CountDownLatch(1))
               .setCountsBlock(countsBlock)
               .setParserFactory(parserFactory);
       List<CrawlTask> tasks = result.getLinks().stream().map(url -> taskBuilder.setUrl(url).build()).toList();
