@@ -32,11 +32,11 @@ final class ProfilingMethodInterceptor implements InvocationHandler {
             ZonedDateTime startTime = ZonedDateTime.now(clock);
             try {
                 obj = method.invoke(delegate, args);
-                state.record(delegate.getClass(), method, Duration.between(startTime, ZonedDateTime.now(clock)));
                 return obj;
             } catch (InvocationTargetException e) {
-                state.record(delegate.getClass(), method, Duration.between(startTime, ZonedDateTime.now(clock)));
                 throw e.getTargetException();
+            }finally {
+                state.record(delegate.getClass(), method, Duration.between(startTime, ZonedDateTime.now(clock)));
             }
         } else {
             try {

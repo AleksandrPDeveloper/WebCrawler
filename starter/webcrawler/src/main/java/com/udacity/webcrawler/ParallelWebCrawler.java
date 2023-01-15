@@ -52,7 +52,7 @@ final class ParallelWebCrawler implements WebCrawler {
     final Map<String, Integer> counts = Collections.synchronizedMap(new HashMap<>());
     final Set<String> visitedUrls = Collections.synchronizedSet(new HashSet<>());
     CrawlTask.Builder taskBuilder = new CrawlTask.Builder()
-            .setTimeout(timeout)
+            .setDeadline(clock.instant().plus(timeout))
             .setClock(clock)
             .setIgnoredUrls(ignoredUrls)
             .setMaxDepth(maxDepth)
@@ -101,7 +101,7 @@ final class ParallelWebCrawler implements WebCrawler {
     private final List<Pattern> ignoredUrls;
     private final Map<String, Integer> counts;
     private final Set<String> visitedUrls;
-    private final Duration timeout;
+    private final Instant deadline;
     private final String url;
     private final PageParserFactory parserFactory;
     private final Object visitedUrlsBlock;
@@ -109,7 +109,7 @@ final class ParallelWebCrawler implements WebCrawler {
     private final CountDownLatch latch;
 
     public CrawlTask(Clock clock,
-                     Duration timeout,
+                     Instant deadline,
                      int popularWordCount,
                      int maxDepth,
                      List<Pattern> ignoredUrls,
@@ -121,7 +121,7 @@ final class ParallelWebCrawler implements WebCrawler {
                      Object countsBlock,
                      CountDownLatch latch) {
       this.clock = clock;
-      this.timeout = timeout;
+      this.deadline = deadline;
       this.popularWordCount = popularWordCount;
       this.maxDepth = maxDepth;
       this.ignoredUrls = ignoredUrls;
@@ -136,7 +136,7 @@ final class ParallelWebCrawler implements WebCrawler {
 
     @Override
     protected void compute() {
-      Instant deadline = clock.instant().plus(timeout);
+
       if (maxDepth == 0 || clock.instant().isAfter(deadline)) {
         latch.countDown();
         return;
@@ -168,7 +168,7 @@ final class ParallelWebCrawler implements WebCrawler {
       }
 
       CrawlTask.Builder taskBuilder = new CrawlTask.Builder()
-              .setTimeout(timeout)
+              .setDeadline(deadline)
               .setClock(clock).setIgnoredUrls(ignoredUrls)
               .setMaxDepth(maxDepth-1)
               .setPopularWordCount(popularWordCount)
@@ -185,7 +185,7 @@ final class ParallelWebCrawler implements WebCrawler {
 
     public static final class Builder {
       private Clock clock;
-      private Duration timeout;
+      private Instant deadline;
       private int popularWordCount;
       private int maxDepth;
       private List<Pattern> ignoredUrls;
@@ -200,7 +200,7 @@ final class ParallelWebCrawler implements WebCrawler {
       public CrawlTask build() {
         return new CrawlTask(
                 clock,
-                timeout,
+                deadline,
                 popularWordCount,
                 maxDepth,
                 ignoredUrls,
@@ -251,8 +251,8 @@ final class ParallelWebCrawler implements WebCrawler {
         return this;
       }
 
-      public Builder setTimeout(Duration timeout) {
-        this.timeout = timeout;
+      public Builder setDeadline(Instant deadline) {
+        this.deadline = deadline;
         return this;
       }
 
