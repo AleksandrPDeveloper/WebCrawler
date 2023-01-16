@@ -9,7 +9,9 @@ import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.OpenOption;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.Objects;
 
 /**
@@ -36,7 +38,7 @@ public final class CrawlResultWriter {
   public void write(Path path) {
     // This is here to get rid of the unused variable warning.
     Objects.requireNonNull(path);
-    try (Writer writer = Files.newBufferedWriter(Path.of(path.toUri()), StandardCharsets.UTF_8)) {
+    try (Writer writer = Files.newBufferedWriter(Path.of(path.toUri()), StandardCharsets.UTF_8, StandardOpenOption.CREATE)) {
       write(writer);
     } catch (IOException e) {
       throw new RuntimeException(e);
